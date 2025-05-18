@@ -91,11 +91,14 @@ export const getUserProfileByEmail = async (email: string): Promise<Profile | nu
   return data as Profile | null;
 };
 
+// Type for our dynamic table names
+type DataTable = 'patient_data' | 'staff_data' | 'admin_data';
+
 // Function to get user data based on role
 export const getUserData = async (userId: string, role: string) => {
   if (!userId || !role) return null;
   
-  let tableName: string | null = null;
+  let tableName: DataTable | null = null;
   
   // Determine which table to query based on user role
   switch (role) {
@@ -114,9 +117,8 @@ export const getUserData = async (userId: string, role: string) => {
   
   if (!tableName) return null;
   
-  // Use a type assertion when using a dynamic table name
   const { data, error } = await supabase
-    .from(tableName as keyof Database['public']['Tables'])
+    .from(tableName)
     .select('*')
     .eq('user_id', userId)
     .maybeSingle();
@@ -133,7 +135,7 @@ export const getUserData = async (userId: string, role: string) => {
 export const updateUserData = async (userId: string, role: string, updates: any) => {
   if (!userId || !role) return false;
   
-  let tableName: string | null = null;
+  let tableName: DataTable | null = null;
   
   switch (role) {
     case 'patient':
@@ -151,9 +153,8 @@ export const updateUserData = async (userId: string, role: string, updates: any)
   
   if (!tableName) return false;
   
-  // Use a type assertion when using a dynamic table name
   const { error } = await supabase
-    .from(tableName as keyof Database['public']['Tables'])
+    .from(tableName)
     .update(updates)
     .eq('user_id', userId);
   
