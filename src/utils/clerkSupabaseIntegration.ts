@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { UserResource } from "@clerk/clerk-react";
+import type { User } from "@clerk/clerk-react";
 
 // Function to check if a user exists in our profiles table
 export const checkUserExists = async (email: string): Promise<boolean> => {
@@ -19,7 +19,7 @@ export const checkUserExists = async (email: string): Promise<boolean> => {
 };
 
 // Function to create a new user profile if they don't exist
-export const createUserProfile = async (user: UserResource): Promise<string | null> => {
+export const createUserProfile = async (user: User): Promise<string | null> => {
   const email = user.primaryEmailAddress?.emailAddress;
   if (!email) return null;
 
@@ -128,6 +128,8 @@ export const updateUserData = async (userId: string, role: string, updates: any)
     default:
       return false;
   }
+  
+  if (!tableName) return false;
   
   const { error } = await supabase
     .from(tableName)
