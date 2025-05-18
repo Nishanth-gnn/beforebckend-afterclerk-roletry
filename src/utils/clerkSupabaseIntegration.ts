@@ -34,6 +34,7 @@ export const createUserProfile = async (user: ClerkUser): Promise<string | null>
   const { data: uuidData } = await supabase.rpc('gen_random_uuid');
   const userId = uuidData;
 
+  // Explicitly type the table name for insert
   const { data, error } = await supabase
     .from('profiles')
     .insert([
@@ -85,6 +86,7 @@ export const getUserProfileByEmail = async (email: string) => {
 export const getUserData = async (userId: string, role: string) => {
   if (!userId || !role) return null;
   
+  // Define a literal type for table names to satisfy TypeScript
   let tableName: 'patient_data' | 'staff_data' | 'admin_data' | null = null;
   
   // Determine which table to query based on user role
@@ -122,6 +124,7 @@ export const getUserData = async (userId: string, role: string) => {
 export const updateUserData = async (userId: string, role: string, updates: any) => {
   if (!userId || !role) return false;
   
+  // Define a literal type for table names to satisfy TypeScript
   let tableName: 'patient_data' | 'staff_data' | 'admin_data' | null = null;
   
   switch (role) {
