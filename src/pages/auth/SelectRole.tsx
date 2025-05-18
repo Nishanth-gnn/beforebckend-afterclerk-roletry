@@ -7,11 +7,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import Layout from "@/components/layout/Layout";
 import { toast } from "sonner";
 import { User, Calendar, BarChart3 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { getUserProfileByEmail, updateUserData } from "@/utils/clerkSupabaseIntegration";
 
 const SelectRole = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   if (!user) {
     return (
@@ -27,25 +30,79 @@ const SelectRole = () => {
     setSelectedRole(role);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedRole) {
       toast.error("Please select a role to continue");
       return;
     }
 
-    // Navigate based on selected role
-    switch (selectedRole) {
-      case "patient":
-        navigate("/patient");
-        break;
-      case "staff":
-        navigate("/staff");
-        break;
-      case "admin":
-        navigate("/admin");
-        break;
-      default:
-        toast.error("Invalid role selection");
+    try {
+      setLoading(true);
+      const email = user.primaryEmailAddress?.emailAddress;
+      
+      if (!email) {
+        toast.error("Email address not found");
+        return;
+      }
+      
+      // Get user profile
+      const profile = await getUserProfileByEmail(email);
+      
+      if (!profile) {
+        toast.error("User profile not found");
+        return;
+      }
+
+      // Update user's role in the profiles table if it's different
+      if (profile.role !== selectedRole) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ role: selectedRole })
+          .eq('id', profile.id);
+          
+        if (error) {
+          console.error("Error updating role:", error);
+          toast.error("Failed to update role");
+          return;
+        }
+        
+        // Check if we need to create role-specific data entry
+        if (selectedRole !== profile.role) {
+          const tableName = `${selectedRole}_data`;
+          
+          // Create new entry in the appropriate table
+          const { error: createError } = await supabase
+            .from(tableName)
+            .insert([{ user_id: profile.id }]);
+            
+          if (createError) {
+            console.error("Error creating role data:", createError);
+            // This is not critical, so we'll continue anyway
+          }
+        }
+      }
+      
+      toast.success(`Role set to ${selectedRole}`);
+      
+      // Navigate based on selected role
+      switch (selectedRole) {
+        case "patient":
+          navigate("/patient");
+          break;
+        case "staff":
+          navigate("/staff");
+          break;
+        case "admin":
+          navigate("/admin");
+          break;
+        default:
+          toast.error("Invalid role selection");
+      }
+    } catch (error) {
+      console.error("Error handling role selection:", error);
+      toast.error("An error occurred while setting your role");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -134,8 +191,13 @@ const SelectRole = () => {
           </div>
 
           <div className="flex justify-center">
-            <Button onClick={handleSubmit} size="lg" className="px-8">
-              Continue
+            <Button 
+              onClick={handleSubmit} 
+              size="lg" 
+              className="px-8"
+              disabled={loading}
+            >
+              {loading ? "Processing..." : "Continue"}
             </Button>
           </div>
         </div>
