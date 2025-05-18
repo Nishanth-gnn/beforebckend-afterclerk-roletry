@@ -34,9 +34,13 @@ export const createUserProfile = async (user: ClerkUser): Promise<string | null>
   const { data: uuidData } = await supabase.rpc('gen_random_uuid');
   const userId = uuidData;
 
-  // Explicitly type the table name for insert
+  // Explicitly type the table names with string literals
+  const profileTable = 'profiles' as const;
+  const patientTable = 'patient_data' as const;
+
+  // Insert into profiles
   const { data, error } = await supabase
-    .from('profiles')
+    .from(profileTable)
     .insert([
       { 
         id: userId, 
@@ -54,7 +58,7 @@ export const createUserProfile = async (user: ClerkUser): Promise<string | null>
   
   // Also create an entry in patient_data table
   const { error: patientError } = await supabase
-    .from('patient_data')
+    .from(patientTable)
     .insert([{ user_id: userId }]);
   
   if (patientError) {
