@@ -1,6 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { User } from "@clerk/clerk-react";
+import type { Database } from "@/integrations/supabase/types";
+
+// Define our own User interface based on what we're using from Clerk
+interface ClerkUser {
+  primaryEmailAddress?: {
+    emailAddress?: string;
+  };
+}
 
 // Function to check if a user exists in our profiles table
 export const checkUserExists = async (email: string): Promise<boolean> => {
@@ -19,7 +26,7 @@ export const checkUserExists = async (email: string): Promise<boolean> => {
 };
 
 // Function to create a new user profile if they don't exist
-export const createUserProfile = async (user: User): Promise<string | null> => {
+export const createUserProfile = async (user: ClerkUser): Promise<string | null> => {
   const email = user.primaryEmailAddress?.emailAddress;
   if (!email) return null;
 
@@ -94,6 +101,8 @@ export const getUserData = async (userId: string, role: string) => {
     default:
       return null;
   }
+  
+  if (!tableName) return null;
   
   const { data, error } = await supabase
     .from(tableName)
