@@ -2,6 +2,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
+// Define Profile interface based on our database structure
+export interface Profile {
+  id: string;
+  email: string;
+  role: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Define our own User interface based on what we're using from Clerk
 interface ClerkUser {
   primaryEmailAddress?: {
@@ -36,7 +45,7 @@ export const createUserProfile = async (user: ClerkUser): Promise<string | null>
 
   // Insert into profiles
   const { data, error } = await supabase
-    .from('profiles' as keyof Database['public']['Tables'])
+    .from('profiles')
     .insert([
       { 
         id: userId, 
@@ -54,7 +63,7 @@ export const createUserProfile = async (user: ClerkUser): Promise<string | null>
   
   // Also create an entry in patient_data table
   const { error: patientError } = await supabase
-    .from('patient_data' as keyof Database['public']['Tables'])
+    .from('patient_data')
     .insert([{ user_id: userId }]);
   
   if (patientError) {
@@ -65,11 +74,11 @@ export const createUserProfile = async (user: ClerkUser): Promise<string | null>
 };
 
 // Function to get user profile by email
-export const getUserProfileByEmail = async (email: string) => {
+export const getUserProfileByEmail = async (email: string): Promise<Profile | null> => {
   if (!email) return null;
   
   const { data, error } = await supabase
-    .from('profiles' as keyof Database['public']['Tables'])
+    .from('profiles')
     .select('*')
     .eq('email', email)
     .maybeSingle();
@@ -79,14 +88,14 @@ export const getUserProfileByEmail = async (email: string) => {
     return null;
   }
   
-  return data;
+  return data as Profile | null;
 };
 
 // Function to get user data based on role
 export const getUserData = async (userId: string, role: string) => {
   if (!userId || !role) return null;
   
-  let tableName: keyof Database['public']['Tables'] | null = null;
+  let tableName: string | null = null;
   
   // Determine which table to query based on user role
   switch (role) {
@@ -105,8 +114,9 @@ export const getUserData = async (userId: string, role: string) => {
   
   if (!tableName) return null;
   
+  // Use a type assertion when using a dynamic table name
   const { data, error } = await supabase
-    .from(tableName)
+    .from(tableName as any)
     .select('*')
     .eq('user_id', userId)
     .maybeSingle();
@@ -123,7 +133,7 @@ export const getUserData = async (userId: string, role: string) => {
 export const updateUserData = async (userId: string, role: string, updates: any) => {
   if (!userId || !role) return false;
   
-  let tableName: keyof Database['public']['Tables'] | null = null;
+  let tableName: string | null = null;
   
   switch (role) {
     case 'patient':
@@ -141,8 +151,9 @@ export const updateUserData = async (userId: string, role: string, updates: any)
   
   if (!tableName) return false;
   
+  // Use a type assertion when using a dynamic table name
   const { error } = await supabase
-    .from(tableName)
+    .from(tableName as any)
     .update(updates)
     .eq('user_id', userId);
   

@@ -7,7 +7,7 @@ import Layout from "@/components/layout/Layout";
 import { toast } from "sonner";
 import { User, Calendar, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserProfileByEmail, updateUserData } from "@/utils/clerkSupabaseIntegration";
+import { getUserProfileByEmail, updateUserData, Profile } from "@/utils/clerkSupabaseIntegration";
 
 const SelectRole = () => {
   const { user } = useUser();

@@ -6,12 +6,13 @@ import {
   createUserProfile, 
   getUserProfileByEmail, 
   getUserData,
-  updateUserData
+  updateUserData,
+  Profile
 } from "@/utils/clerkSupabaseIntegration";
 import { toast } from "sonner";
 
 type UserDataContextType = {
-  userProfile: any;
+  userProfile: Profile | null;
   userData: any;
   loading: boolean;
   setUserData: (data: any) => void;
@@ -22,7 +23,7 @@ const UserDataContext = createContext<UserDataContextType | undefined>(undefined
 
 export function UserDataProvider({ children }: { children: ReactNode }) {
   const { user, isLoaded } = useUser();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
