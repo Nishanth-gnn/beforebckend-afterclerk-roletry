@@ -18,6 +18,9 @@ interface ClerkUser {
   };
 }
 
+// Type for our dynamic table names
+type DataTable = 'patient_data' | 'staff_data' | 'admin_data';
+
 // Function to check if a user exists in our profiles table
 export const checkUserExists = async (email: string): Promise<boolean> => {
   const { data, error } = await supabase
@@ -63,7 +66,7 @@ export const createUserProfile = async (user: ClerkUser): Promise<string | null>
   
   // Also create an entry in patient_data table
   const { error: patientError } = await supabase
-    .from('patient_data')
+    .from('patient_data' as keyof Database['public']['Tables'])
     .insert([{ user_id: userId }]);
   
   if (patientError) {
@@ -90,9 +93,6 @@ export const getUserProfileByEmail = async (email: string): Promise<Profile | nu
   
   return data as Profile | null;
 };
-
-// Type for our dynamic table names
-type DataTable = 'patient_data' | 'staff_data' | 'admin_data';
 
 // Function to get user data based on role
 export const getUserData = async (userId: string, role: string) => {
