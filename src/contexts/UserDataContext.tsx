@@ -41,32 +41,33 @@ export function UserDataProvider({ children }: { children: ReactNode }) {
       }
 
       try {
+        console.log("Setting up user data for email:", email);
+        
         // Check if user exists in our database
         const exists = await checkUserExists(email);
+        console.log("User exists in database:", exists);
         
         if (!exists) {
-          // If user doesn't exist and isn't one of our pre-configured users,
-          // create a new profile for them
-          if (email !== '23071a67e9@vnrvjiet.in' && email !== 'gnishanth2005@gmail.com') {
-            await createUserProfile(user);
-          } else {
-            // These users should already exist from our SQL migration
-            console.log("Pre-configured user detected:", email);
-          }
+          // Create a new profile for the user if they don't exist
+          console.log("Creating new user profile");
+          await createUserProfile(user);
         }
 
         // Get user profile
         const profile = await getUserProfileByEmail(email);
         if (!profile) {
           console.error("Failed to get user profile");
+          toast.error("User profile not found. Please try signing out and in again.");
           setLoading(false);
           return;
         }
 
+        console.log("Retrieved user profile:", profile);
         setUserProfile(profile);
 
         // Get role-specific data
         const roleData = await getUserData(profile.id, profile.role);
+        console.log("Retrieved role data:", roleData);
         setUserData(roleData || {});
       } catch (error) {
         console.error("Error setting up user data:", error);

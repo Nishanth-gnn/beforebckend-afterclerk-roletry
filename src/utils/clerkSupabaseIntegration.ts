@@ -80,6 +80,8 @@ export const createUserProfile = async (user: ClerkUser): Promise<string | null>
 export const getUserProfileByEmail = async (email: string): Promise<Profile | null> => {
   if (!email) return null;
   
+  console.log("Looking up profile for email:", email);
+  
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -91,6 +93,7 @@ export const getUserProfileByEmail = async (email: string): Promise<Profile | nu
     return null;
   }
   
+  console.log("Profile data returned:", data);
   return data as Profile | null;
 };
 
@@ -118,7 +121,7 @@ export const getUserData = async (userId: string, role: string) => {
   if (!tableName) return null;
   
   const { data, error } = await supabase
-    .from(tableName)
+    .from(tableName as keyof Database['public']['Tables'])
     .select('*')
     .eq('user_id', userId)
     .maybeSingle();
@@ -154,7 +157,7 @@ export const updateUserData = async (userId: string, role: string, updates: any)
   if (!tableName) return false;
   
   const { error } = await supabase
-    .from(tableName)
+    .from(tableName as keyof Database['public']['Tables'])
     .update(updates)
     .eq('user_id', userId);
   
