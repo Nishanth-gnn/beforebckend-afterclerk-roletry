@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
@@ -68,7 +67,7 @@ const SelectRole = () => {
         
         // Check if we need to create role-specific data entry
         if (selectedRole !== profile.role) {
-          const tableName = `${selectedRole}_data`;
+          const tableName = `${selectedRole}_data` as 'patient_data' | 'staff_data' | 'admin_data';
           
           // Create new entry in the appropriate table
           const { error: createError } = await supabase

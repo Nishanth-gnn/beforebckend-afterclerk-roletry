@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "@clerk/clerk-react";
+import type { UserResource } from "@clerk/clerk-react";
 
 // Function to check if a user exists in our profiles table
 export const checkUserExists = async (email: string): Promise<boolean> => {
@@ -19,7 +19,7 @@ export const checkUserExists = async (email: string): Promise<boolean> => {
 };
 
 // Function to create a new user profile if they don't exist
-export const createUserProfile = async (user: User): Promise<string | null> => {
+export const createUserProfile = async (user: UserResource): Promise<string | null> => {
   const email = user.primaryEmailAddress?.emailAddress;
   if (!email) return null;
 
@@ -78,7 +78,7 @@ export const getUserProfileByEmail = async (email: string) => {
 export const getUserData = async (userId: string, role: string) => {
   if (!userId || !role) return null;
   
-  let tableName = '';
+  let tableName: 'patient_data' | 'staff_data' | 'admin_data' | null = null;
   
   // Determine which table to query based on user role
   switch (role) {
@@ -113,7 +113,7 @@ export const getUserData = async (userId: string, role: string) => {
 export const updateUserData = async (userId: string, role: string, updates: any) => {
   if (!userId || !role) return false;
   
-  let tableName = '';
+  let tableName: 'patient_data' | 'staff_data' | 'admin_data' | null = null;
   
   switch (role) {
     case 'patient':

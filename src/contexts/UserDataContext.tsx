@@ -5,7 +5,8 @@ import {
   checkUserExists, 
   createUserProfile, 
   getUserProfileByEmail, 
-  getUserData 
+  getUserData,
+  updateUserData
 } from "@/utils/clerkSupabaseIntegration";
 import { toast } from "sonner";
 
