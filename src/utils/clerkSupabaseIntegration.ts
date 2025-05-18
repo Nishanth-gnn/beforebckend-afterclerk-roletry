@@ -116,7 +116,7 @@ export const getUserData = async (userId: string, role: string) => {
   
   // Use a type assertion when using a dynamic table name
   const { data, error } = await supabase
-    .from(tableName as any)
+    .from(tableName as keyof Database['public']['Tables'])
     .select('*')
     .eq('user_id', userId)
     .maybeSingle();
@@ -153,7 +153,7 @@ export const updateUserData = async (userId: string, role: string, updates: any)
   
   // Use a type assertion when using a dynamic table name
   const { error } = await supabase
-    .from(tableName as any)
+    .from(tableName as keyof Database['public']['Tables'])
     .update(updates)
     .eq('user_id', userId);
   
