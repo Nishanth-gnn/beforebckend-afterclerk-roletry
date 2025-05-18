@@ -34,13 +34,9 @@ export const createUserProfile = async (user: ClerkUser): Promise<string | null>
   const { data: uuidData } = await supabase.rpc('gen_random_uuid');
   const userId = uuidData;
 
-  // Explicitly type the table names with string literals
-  const profileTable = 'profiles' as const;
-  const patientTable = 'patient_data' as const;
-
   // Insert into profiles
   const { data, error } = await supabase
-    .from(profileTable)
+    .from('profiles' as keyof Database['public']['Tables'])
     .insert([
       { 
         id: userId, 
@@ -58,7 +54,7 @@ export const createUserProfile = async (user: ClerkUser): Promise<string | null>
   
   // Also create an entry in patient_data table
   const { error: patientError } = await supabase
-    .from(patientTable)
+    .from('patient_data' as keyof Database['public']['Tables'])
     .insert([{ user_id: userId }]);
   
   if (patientError) {
@@ -73,7 +69,7 @@ export const getUserProfileByEmail = async (email: string) => {
   if (!email) return null;
   
   const { data, error } = await supabase
-    .from('profiles')
+    .from('profiles' as keyof Database['public']['Tables'])
     .select('*')
     .eq('email', email)
     .maybeSingle();
@@ -90,8 +86,7 @@ export const getUserProfileByEmail = async (email: string) => {
 export const getUserData = async (userId: string, role: string) => {
   if (!userId || !role) return null;
   
-  // Define a literal type for table names to satisfy TypeScript
-  let tableName: 'patient_data' | 'staff_data' | 'admin_data' | null = null;
+  let tableName: keyof Database['public']['Tables'] | null = null;
   
   // Determine which table to query based on user role
   switch (role) {
@@ -128,8 +123,7 @@ export const getUserData = async (userId: string, role: string) => {
 export const updateUserData = async (userId: string, role: string, updates: any) => {
   if (!userId || !role) return false;
   
-  // Define a literal type for table names to satisfy TypeScript
-  let tableName: 'patient_data' | 'staff_data' | 'admin_data' | null = null;
+  let tableName: keyof Database['public']['Tables'] | null = null;
   
   switch (role) {
     case 'patient':
